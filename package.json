@@ -1,0 +1,59 @@
+{
+  "name": "dsh-session-tools",
+  "version": "0.1.0",
+  "description": "DSH 插件：删除对话轮次。删除只是把内容从「模型可见上下文」里遮蔽（墓碑），原始会话日志一个字节不改，随时可按需读回。",
+  "type": "module",
+  "license": "MIT",
+  "author": "Nagiko0739",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "session",
+    "delete",
+    "tombstone",
+    "context"
+  ],
+  "homepage": "https://github.com/Nagiko0739/dsh-session-tools#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nagiko0739/dsh-session-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Nagiko0739/dsh-session-tools/issues"
+  },
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "tests",
+    "tools"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  },
+  "meta": {
+    "title": "会话清理",
+    "description": "删除对话轮次。删除只在模型可见的上下文里遮蔽内容，原始记录仍留在会话日志中，可审计、可读回。"
+  }
+}
