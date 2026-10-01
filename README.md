@@ -1,4 +1,4 @@
-# dsh-session-tools
+# dsh-turn-eraser
 
 > 给 [DeepSeek Harness](https://github.com/deepseek-ai)（DSH）用的会话清理插件：**删除某一轮对话**。
 >
@@ -53,7 +53,7 @@ dsh plugin --profile <你的配置档名> add dsh-turn-eraser
 > 这时把版本号一起写上就行，例如 `dsh-turn-eraser@0.1.0`。
 
 **其他方式**：同一个输入框也支持 GitHub 仓库地址或本地目录路径。
-（本插件的仓库在 `Nagiko0739/dsh-session-tools`，注意仓库名和 npm 包名不一样。）
+（本插件的仓库在 `Nagiko0739/dsh-turn-eraser`。）
 
 ## 使用
 
@@ -179,7 +179,7 @@ node tests/08-tombstone-text.mjs       # 墓碑文案的轮数统计
 
 ## English summary
 
-**dsh-session-tools** — a plugin for DeepSeek Harness (DSH) that deletes a conversation turn.
+**dsh-turn-eraser** — a plugin for DeepSeek Harness (DSH) that deletes a conversation turn.
 
 Install from npm: `dsh-turn-eraser` (or add the GitHub repo / local path in the DSH Plugins page).
 

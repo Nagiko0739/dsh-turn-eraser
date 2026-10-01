@@ -14,13 +14,13 @@
     "tombstone",
     "context"
   ],
-  "homepage": "https://github.com/Nagiko0739/dsh-session-tools#readme",
+  "homepage": "https://github.com/Nagiko0739/dsh-turn-eraser#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Nagiko0739/dsh-session-tools.git"
+    "url": "git+https://github.com/Nagiko0739/dsh-turn-eraser.git"
   },
   "bugs": {
-    "url": "https://github.com/Nagiko0739/dsh-session-tools/issues"
+    "url": "https://github.com/Nagiko0739/dsh-turn-eraser/issues"
   },
   "main": "./index.js",
   "exports": {
