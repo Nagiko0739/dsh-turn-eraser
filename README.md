@@ -35,7 +35,25 @@ DSH 的会话记录是**只追加的事件日志**，本身不提供删除某一
 
 ## 安装
 
-在 DSH 的**插件**页面里，添加本插件（支持包名 / GitHub 仓库地址 / 本地目录路径）。
+**推荐：从 npm 安装**（最省事）
+
+在 DSH 的 **设置 → 插件 → 添加插件** 里，填入包名：
+
+```
+dsh-turn-eraser
+```
+
+或者用命令行：
+
+```bash
+dsh plugin --profile <你的配置档名> add dsh-turn-eraser
+```
+
+> 💡 **如果提示装不上**：DSH 有一条「新版本冷却期」的安全策略，刚发布的版本可能被挡住。
+> 这时把版本号一起写上就行，例如 `dsh-turn-eraser@0.1.0`。
+
+**其他方式**：同一个输入框也支持 GitHub 仓库地址或本地目录路径。
+（本插件的仓库在 `Nagiko0739/dsh-session-tools`，注意仓库名和 npm 包名不一样。）
 
 ## 使用
 
@@ -162,6 +180,8 @@ node tests/08-tombstone-text.mjs       # 墓碑文案的轮数统计
 ## English summary
 
 **dsh-session-tools** — a plugin for DeepSeek Harness (DSH) that deletes a conversation turn.
+
+Install from npm: `dsh-turn-eraser` (or add the GitHub repo / local path in the DSH Plugins page).
 
 Deletion works by appending a **tombstone** event that hides the target range from the
 **model-visible context**. The underlying session log is never rewritten, so the original

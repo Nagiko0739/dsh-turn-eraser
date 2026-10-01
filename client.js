@@ -1,5 +1,5 @@
 /**
- * dsh-session-tools —— 界面侧（Client half）
+ * dsh-turn-eraser —— 界面侧（Client half）
  *
  * 界面上一共两样东西：
  *
@@ -22,7 +22,7 @@
  */
 
 window.__ModuleLoader__.load({
-	id: "dsh-session-tools",
+	id: "dsh-turn-eraser",
 	factory(require) {
 		const React = require("react");
 		const { useEffect, useLayoutEffect, useRef, useState } = React;
@@ -39,7 +39,7 @@ window.__ModuleLoader__.load({
 		const Tooltip = primitives?.Tooltip ?? FallbackTooltip;
 
 		const NS = "session-tools";
-		const ROUTE = "/dsh-session-tools";
+		const ROUTE = "/dsh-turn-eraser";
 		const BUILD = "2026-10-01.5";
 		/** 浮出的面板多久没动作就自己收起。 */
 		const AUTO_CLOSE_MS = 4000;

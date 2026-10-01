@@ -1,4 +1,4 @@
 # 把本插件挂进 DSH。insert 表示"新增一行"，不覆盖官方任何插件行。
 - insert:
     - id: session-tools
-      name: dsh-session-tools
+      name: dsh-turn-eraser

@@ -3,7 +3,7 @@
 """
 session-tools 删除审计工具
 
-用途：查看 dsh-session-tools 插件"删除"过的内容。
+用途：查看 dsh-turn-eraser 插件"删除"过的内容。
 原理：删除只是往会话日志尾部追加一条"墓碑"（user/message + surfaceOp: replace），
       把目标区间从**模型可见的上下文**里遮蔽掉。原始事件一个字都没改，
       所以随时可以在这里把原文读回来。

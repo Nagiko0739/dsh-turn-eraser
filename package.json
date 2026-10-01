@@ -1,5 +1,5 @@
 {
-  "name": "dsh-session-tools",
+  "name": "dsh-turn-eraser",
   "version": "0.1.0",
   "description": "DSH 插件：删除对话轮次。删除只是把内容从「模型可见上下文」里遮蔽（墓碑），原始会话日志一个字节不改，随时可按需读回。",
   "type": "module",

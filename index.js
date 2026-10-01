@@ -1,5 +1,5 @@
 /**
- * dsh-session-tools —— 宿主侧（Host half）
+ * dsh-turn-eraser —— 宿主侧（Host half）
  *
  * 给 DSH 补上"删除会话内容"的能力。一期提供两个操作：
  *
@@ -28,7 +28,7 @@ const name = "session-tools";
 const inject = ["sessions", "agents", "webServer"];
 
 /** 界面这一侧往这里 POST。 */
-const ROUTE = "/dsh-session-tools";
+const ROUTE = "/dsh-turn-eraser";
 /** 写进墓碑 source.producer 的插件身份。 */
 const PLUGIN_ID = "session-tools";
 /** 墓碑上的占位文本。**绝不能为空**：严格的第三方服务商拒绝空 user 消息，
