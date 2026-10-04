@@ -40,7 +40,7 @@ window.__ModuleLoader__.load({
 
 		const NS = "session-tools";
 		const ROUTE = "/dsh-turn-eraser";
-		const BUILD = "2026-10-01.5";
+		const BUILD = "2026-10-04.2";
 		/** 浮出的面板多久没动作就自己收起。 */
 		const AUTO_CLOSE_MS = 4000;
 
@@ -82,6 +82,7 @@ window.__ModuleLoader__.load({
 			"error.INTERNAL": "服务端出错了，请看 DSH 的日志。",
 			"error.generic": "操作失败：{message}",
 			"error.NO_TURN": "读不到这一轮的编号，刷新页面后再试。",
+			"turn.label": "第 {turn} 轮",
 		};
 		const en = {
 			"action.open": "Delete this turn",
@@ -96,6 +97,7 @@ window.__ModuleLoader__.load({
 			"error.INTERNAL": "The server failed; check the DSH logs.",
 			"error.generic": "Operation failed: {message}",
 			"error.NO_TURN": "Could not read this turn's number; refresh the page and retry.",
+			"turn.label": "Turn {turn}",
 		};
 
 		function fill(text, slots) {
@@ -277,6 +279,60 @@ window.__ModuleLoader__.load({
 			}, [tick]);
 
 			return React.createElement("span", { ref, hidden: true, "data-dsh-st-marker": "" });
+		}
+		// #endregion
+
+		// #region 轮尾的「第 N 轮」标签
+		/**
+		 * 轮尾那行淡灰的「第 N 轮」。
+		 *
+		 * 轮次号的取法和 DeletedTurnMarker 一模一样：组件自己就渲染在轮尾容器
+		 * （`[data-turn-tail]`）内部，所以顺着 DOM 往上找一次就能读到官方写在
+		 * 属性里的编号。同样不依赖插槽 props —— 那个 `turn` 参数到底传没传，
+		 * 我们踩过一次坑，不再赌第二次。
+		 *
+		 * 为什么第一帧要渲染一个 display:none 的空壳：不渲染 DOM 就没有 ref，
+		 * effect 里拿不到元素，编号永远算不出来。所以先挂壳、effect 里立刻填上；
+		 * useLayoutEffect 是同步执行的，你不会看到中间态闪一下。
+		 */
+		const turnLabelStyle = {
+			display: "inline-flex",
+			alignItems: "center",
+			// 它渲染在垃圾桶那个 inline-flex 容器内部，auto margin 会吃掉左侧
+			// 剩余空间，于是贴着同一行的最右边——和垃圾桶齐平，且不多占一行高度。
+			marginLeft: "auto",
+			fontSize: 11,
+			lineHeight: "16px",
+			// 凪指定的固定色号（不跟主题变量走，免得换主题时深浅不一）。
+			color: "#81858d",
+			fontVariantNumeric: "tabular-nums",
+			userSelect: "none",
+			whiteSpace: "nowrap",
+		};
+
+		function TurnNumberLabel({ sessionTools, t }) {
+			const ref = useRef(null);
+			const [turn, setTurn] = useState(null);
+
+			useLayoutEffect(() => {
+				const node = ref.current;
+				if (node === null) return;
+				setTurn(markTurnNumber(node));
+			}, []);
+
+			const table = tableFor(sessionTools?.locale?.getLocale?.().active);
+			const fallback = typeof t === "function" ? t("turn.label") : "第 {turn} 轮";
+			const template = typeof table["turn.label"] === "string" ? table["turn.label"] : fallback;
+
+			return React.createElement(
+				"span",
+				{
+					ref,
+					style: turn === null ? { display: "none" } : turnLabelStyle,
+					"data-dsh-st-turn-label": turn ?? "",
+				},
+				turn === null ? "" : fill(template, { turn }),
+			);
 		}
 		// #endregion
 
@@ -503,6 +559,10 @@ window.__ModuleLoader__.load({
 					? React.createElement("span", { style: panelStyle }, renderAction("delete", true), renderAction("truncate", true))
 					: null,
 				error === null ? null : React.createElement("span", { style: errorStyle, role: "alert" }, error),
+				// 「第 N 轮」和垃圾桶共用这一行：它在同一个 inline-flex 容器里，
+				// 靠 margin-left:auto 顶到最右。既满足"和垃圾桶齐平"，又不像
+				// 单独注册成一项那样多占一行高度。
+				React.createElement(TurnNumberLabel, { sessionTools, t }),
 			);
 		}
 		// #endregion
@@ -560,6 +620,10 @@ window.__ModuleLoader__.load({
 					),
 				"session-tools: deleted-turn marker",
 			);
+
+			// 「第 N 轮」不在这里单独注册——它由 TurnToolsAction（①）顺带渲染。
+			// 理由：插槽项在轮尾容器（纵向 flex）里各占一行，单独注册就必然多出
+			// 一行高度；而凪不想要那个高度，要和垃圾桶共用同一行。
 		}
 
 		return { inject, apply };

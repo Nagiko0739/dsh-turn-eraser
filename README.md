@@ -1,10 +1,10 @@
 # dsh-turn-eraser
 
-> 给 [DeepSeek Harness](https://github.com/deepseek-ai)（DSH）用的会话清理插件：**删除某一轮对话**。
+> 给 [DeepSeek Harness](https://github.com/deepseek-ai)（DSH）用的会话工具：**删除某一轮对话**，并在轮尾**显示轮次编号**。
 >
-> 删除 = 把内容从**模型可见的上下文**里遮蔽掉。原始会话日志**一个字节都不改**，随时可以读回来。
+> 删除 = 把内容从**模型可见的上下文**里遮蔽掉。原始会话日志不变，随时可回溯。
 >
-> 但使用删除后，模型在当轮会话中读取/占用的上下文是变小了的。
+> 使用删除后，模型在当轮会话中读取/占用的上下文是变小了的。
 
 [English summary ↓](#english-summary)
 
@@ -12,14 +12,14 @@
 
 ## 为什么做这个
 
-DSH 的会话记录是**只追加的事件日志**，本身不提供删除某一轮对话的入口。而实际使用中确实会遇到需要"擦掉"某段对话的场景：
+DSH 的会话记录是只追加的事件日志，本身不提供删除某一轮对话的入口。而实际使用中确实会遇到需要"擦掉"某段对话的场景：
 
 - **上下文被污染**：某几轮让对话跑偏了，之后每轮都受影响，越聊越歪
 - **发错了话**：提问打错、贴错文件
 - **整理会话**：把试错的过程清理掉，留下干净的结论
-- 清理过长的上下文，防止模型上下文过重掉进loop/空回。
+- **清理过长的上下文**，防止模型上下文过重但是又暂时不想手动压缩。
 
-本插件的特点是：**每一轮都能删（包括"空回"轮次），并且删除可回溯**。
+本插件的特点是：**每一轮都能删（包括"空回"轮次），并且删除可追溯**。
 
 ## 功能
 
@@ -29,7 +29,8 @@ DSH 的会话记录是**只追加的事件日志**，本身不提供删除某一
 | 删除此处及以后                      | ✅ 已实现                   |
 | 每轮都有删除入口（**含没有正式回答的"空回"轮次**） | ✅ 已实现                   |
 | 删除后把该轮从界面上隐藏                 | ✅ 已实现                   |
-| **审计：读回被删除的原文**              | ✅ 已实现（见下）               |
+| 轮尾显示「第 N 轮」编号                | ✅ 已实现                   |
+| **可追溯：读回被删除的原文**            | ✅ 已实现（见下）               |
 | 删除整个会话                       | ❌ 未实现                   |
 | 彻底擦除（物理抹掉日志）                 | ❌ 未实现，**也不建议**（见「已知限制」） |
 
@@ -49,9 +50,6 @@ dsh-turn-eraser
 dsh plugin --profile <你的配置档名> add dsh-turn-eraser
 ```
 
-> 💡 **如果提示装不上**：DSH 有一条「新版本冷却期」的安全策略，刚发布的版本可能被挡住。
-> 这时把版本号一起写上就行，例如 `dsh-turn-eraser@0.1.0`。
-
 **其他方式**：同一个输入框也支持 GitHub 仓库地址或本地目录路径。
 （本插件的仓库在 `Nagiko0739/dsh-turn-eraser`。）
 
@@ -65,7 +63,7 @@ dsh plugin --profile <你的配置档名> add dsh-turn-eraser
 
 删除后：
 
-- **模型**：从下一轮起再也看不到这段内容
+- **模型**：从下一轮起再也看不到已删除的内容，只能看到 `[已删除 x 轮]`
 - **界面**：那一轮整体隐藏（含思考过程、工具调用的折叠块）
 - **磁盘上的日志**：**原文完整保留**
 
@@ -108,10 +106,10 @@ DSH 的会话日志是"只追加"的，历史无法就地改写。所以本插�
 
 ```bash
 # 列出所有会话的删除记录
-python3 tools/audit_deletions.py
+python3 tools/trace_deletions.py
 
 # 筛选 + 展开被删原文
-python3 tools/audit_deletions.py <关键词> --full
+python3 tools/trace_deletions.py <关键词> --full
 ```
 
 输出示例：
@@ -133,23 +131,28 @@ python3 tools/audit_deletions.py <关键词> --full
 | 能                     | 不能                         |
 | --------------------- | -------------------------- |
 | 查出"删了什么、什么时候删的、属于哪一轮" | ❌ 查不出"**谁**删的"（日志里没有操作者身份） |
-| 读回被删的原文（含思考过程、工具结果）   | ❌ **防不了篡改**（日志是明文，改了就查不出来） |
-| 只取你要的部分（比如只要正文、跳过思考）  | ❌ 提供"一键撤销删除"               |
+| 读回被删的原文（含思考过程、工具结果）   | ❌ 不能一键撤销删除 |
+
+## 轮次编号
+
+垃圾桶的**右边**常驻显示这一轮的编号，例如「第 38 轮」。
+
+编号在人和 AI 眼里是同一个数字，所以可以直接说「咱们第 38 轮说过什么？」，双方指的一定是同一轮。配合本插件的可追溯设计，AI 还能据此把那一轮的原文从会话日志里捞回来，**哪怕它早就被压缩出了上下文**。
+
+编号取的是官方写在界面上的 `data-turn-tail` 属性（不依赖插件插槽传参）。
 
 ## 已知限制
 
-**诚实列表**（都是实际撞过的）：
-
-1. **不能一键撤销**。DSH 的 surface 只有 `append` 和 `replace` 两种操作，`replace` 一旦执行，被替换的节点就从可见列表里消失了，后续事件无法把它放回去。要"恢复"，正确做法是**用上面的审计工具把原文读出来**，而不是改日志。
-2. **审计防不了篡改**。日志是明文 JSON，谁能读就能改。如果需要防篡改，得引入哈希链或外部存证——本插件没有。
+1. **不能一键撤销**。DSH 的 surface 只有 `append` 和 `replace` 两种操作，`replace` 一旦执行，被替换的节点就从可见列表里消失了，后续事件无法把它放回去。要恢复已删除的对话，可以用「可追溯：把删除的内容读回来」一节里的 `tools/trace_deletions.py` 把原文读出来，或者直接让 agent 找回第 X 轮。
+2. **可追溯不等于防篡改**。日志是明文 JSON，谁能读就能改。如果需要防篡改，得引入哈希链或外部存证——本插件没有。
 3. **依赖 DSH 的界面结构**。删除入口挂在官方插槽 `conversation.chat.turnTail` 上。这是官方支持的做法，但如果 DSH 大改界面结构，插件可能需要跟进。代码里做了"读 DOM 兜底"以防万一。
 4. **引用了一个官方组件库**（`@deepseek-ai/dsh-client-ui-primitives`）。官方文档并不推荐插件引用它。代码里做了**自绘兜底**：拿不到这个库时按钮依然可用，只是外观退化。
 5. **"删除整个会话"尚未实现，目前也没有实现这个功能的计划**。
-6. **不做物理擦除**。本插件永远不会去重写会话日志文件——那是高风险操作（日志有连续编号，重排出错会导致整个会话打不开）。
+6. **不做物理擦除**。本插件不会去重写会话日志文件——那是高风险操作（日志有连续编号，重排出错会导致整个会话打不开）。
 
 ## 开发与测试
 
-零运行时依赖，纯 JavaScript（宿主侧）/ 浏览器端（界面侧）。
+零运行时依赖（安装插件不会带进任何第三方 npm 包）。
 
 ```bash
 node --check index.js client.js
@@ -179,17 +182,19 @@ node tests/08-tombstone-text.mjs       # 墓碑文案的轮数统计
 
 ## English summary
 
-**dsh-turn-eraser** — a plugin for DeepSeek Harness (DSH) that deletes a conversation turn.
+**dsh-turn-eraser** — a plugin for DeepSeek Harness (DSH) that deletes a conversation turn
+and shows each turn's number.
 
 Install from npm: `dsh-turn-eraser` (or add the GitHub repo / local path in the DSH Plugins page).
 
 Deletion works by appending a **tombstone** event that hides the target range from the
 **model-visible context**. The underlying session log is never rewritten, so the original
-text can always be read back with `tools/audit_deletions.py`.
+text can always be read back with `tools/trace_deletions.py`.
 
 - ✅ Delete one turn (your prompt + the whole assistant reply), including turns with no visible answer
 - ✅ Delete from this turn onward
 - ✅ Every turn has a delete entry point (official `conversation.chat.turnTail` slot)
+- ✅ Shows the turn number at each turn's footer (「第 N 轮」), so you and the AI can name the same turn
 - ✅ Traceable by design — deleted content is hidden, not erased
 - ❌ No "undo"; to recover content, read it back from the log
 - ❌ Not tamper-proof (the log is plaintext)

@@ -1,7 +1,7 @@
 {
   "name": "dsh-turn-eraser",
-  "version": "0.1.0",
-  "description": "DSH 插件：删除对话轮次。删除只是把内容从「模型可见上下文」里遮蔽（墓碑），原始会话日志一个字节不改，随时可按需读回。",
+  "version": "0.2.0",
+  "description": "DSH 插件：删除对话轮次，并在轮尾显示「第 N 轮」编号。删除只是把内容从「模型可见上下文」里遮蔽（墓碑），原始会话日志一个字节不改，随时可按需读回。",
   "type": "module",
   "license": "MIT",
   "author": "Nagiko0739",
@@ -11,6 +11,7 @@
     "deepseek-harness",
     "session",
     "delete",
+    "turn",
     "tombstone",
     "context"
   ],
@@ -53,7 +54,7 @@
     "@deepseek-ai/cordis": "^4.0.1"
   },
   "meta": {
-    "title": "会话清理",
-    "description": "删除对话轮次。删除只在模型可见的上下文里遮蔽内容，原始记录仍留在会话日志中，可审计、可读回。"
+    "title": "会话清理与轮次",
+    "description": "删除对话轮次，并在轮尾显示「第 N 轮」。删除只在模型可见的上下文里遮蔽内容，原始记录仍留在会话日志中，可追溯、可读回。"
   }
 }

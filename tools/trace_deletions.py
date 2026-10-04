@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-session-tools 删除审计工具
+dsh-turn-eraser 删除追溯工具
 
 用途：查看 dsh-turn-eraser 插件"删除"过的内容。
 原理：删除只是往会话日志尾部追加一条"墓碑"（user/message + surfaceOp: replace），
@@ -9,7 +9,7 @@ session-tools 删除审计工具
       所以随时可以在这里把原文读回来。
 
 用法：
-    PYTHONPATH=tools/pylibs <python> dsh-plugins/session-tools/tools/audit_deletions.py [关键词]
+    PYTHONPATH=tools/pylibs <python> dsh-plugins/session-tools/tools/trace_deletions.py [关键词]
 
     不给关键词 → 列出全部墓碑的概况
     给关键词   → 筛选（匹配被删内容的预览，或所在会话名）
