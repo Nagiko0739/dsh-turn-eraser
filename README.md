@@ -1,8 +1,8 @@
 # dsh-turn-eraser
 
-> 给 [DeepSeek Harness](https://github.com/deepseek-ai)（DSH）用的会话工具：**删除某一轮对话**，并在轮尾**显示轮次编号**。
+> 给 [DeepSeek Harness](https://github.com/deepseek-ai)（DSH）用的会话工具：删除某一轮对话，并在轮尾显示轮次编号（常驻）。
 >
-> 删除 = 把内容从**模型可见的上下文**里遮蔽掉。原始会话日志不变，随时可回溯。
+> 删除 = 把内容从模型可见的上下文里遮蔽掉。**原始会话日志不变**，随时可回溯。
 >
 > 使用删除后，模型在当轮会话中读取/占用的上下文是变小了的。
 
@@ -165,7 +165,7 @@ python3 tools/trace_deletions.py <关键词> --full
 
 ```bash
 node --check index.js client.js
-node tests/run-all.mjs        # 一键跑全部 8 个测试（等价于 npm test / pnpm test）
+node tests/run-all.mjs        # 一键跑全部 9 个测试（等价于 npm test / pnpm test）
 ```
 
 想单独跑某一个：
@@ -179,10 +179,8 @@ node tests/05-real-log-regression.mjs  # 真实日志回归（无日志时自动
 node tests/06-client-load.mjs          # 客户端 bundle 加载
 node tests/07-truncate-span.mjs        # 截断的区间计算
 node tests/08-tombstone-text.mjs       # 墓碑文案（单轮 / 截断 / 跳号）
+node tests/09-trace-tool.mjs           # trace_deletions.py 烟雾测试（需要 zstd + python3）
 ```
-
-> ⚠️ **跑测试一律看退出码，别只看屏幕上的 ✅**：任何一行输出出现 ❌，进程都会以非零码退出；
-> 出现 `⏭ 跳过` 时还会额外提示「这部分没有被验证——别当成通过」。
 
 ## 致谢
 

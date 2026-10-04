@@ -17,7 +17,10 @@ dsh-turn-eraser 删除追溯工具
 """
 import sys, os, json, glob, subprocess
 
-SESSIONS = os.path.expanduser("~/.dsh/sessions")
+# 默认扫本机 ~/.dsh/sessions。
+# 设了 DSH_SESSIONS_DIR 就扫那个目录——测试要用它造隔离的假日志，
+# 顺带也方便扫备份/别的 profile。
+SESSIONS = os.environ.get("DSH_SESSIONS_DIR") or os.path.expanduser("~/.dsh/sessions")
 PRODUCER = "session-tools"
 
 
