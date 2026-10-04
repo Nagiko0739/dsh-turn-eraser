@@ -15,6 +15,10 @@ node_modules/
 dist/
 *.log
 
+# Python 产物（tools/ 下有个 trace_deletions.py）
+__pycache__/
+*.pyc
+
 # 本地测试产物
 checks.json
 preview*/

@@ -22,11 +22,27 @@ PRODUCER = "session-tools"
 
 
 def load_events(path):
-    """解压并解析 .jsonl.zstd"""
+    """解压并解析 .jsonl.zstd。
+
+    ⚠️ 需要系统的 `zstd` 命令（macOS 默认**没有**，要 `brew install zstd`）。
+    2026-10-04 之前这里是 `except: return []`——缺 zstd 时**静默返回空**，
+    用户看到的是"这个会话没有墓碑"，而不是"你环境里少了个东西"。
+    把环境问题伪装成"没有数据"，和"测试永远通过"是同一种病，所以现在直接报错说清楚。
+    """
     try:
-        raw = subprocess.run(["zstd", "-dc", path], capture_output=True, timeout=120).stdout
-    except Exception as e:
-        return []
+        proc = subprocess.run(["zstd", "-dc", path], capture_output=True, timeout=120)
+    except FileNotFoundError:
+        raise SystemExit(
+            "找不到 `zstd` 命令，没法解压会话日志。\n"
+            "  macOS:         brew install zstd\n"
+            "  Debian/Ubuntu: sudo apt install zstd"
+        )
+    except Exception as exc:  # 超时等
+        raise SystemExit(f"解压 {path} 失败：{exc}")
+    if proc.returncode != 0:
+        detail = proc.stderr.decode("utf-8", "replace").strip()
+        raise SystemExit(f"zstd 解压 {path} 失败：{detail}")
+    raw = proc.stdout
     out = []
     for line in raw.split(b"\n"):
         line = line.strip()
