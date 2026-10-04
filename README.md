@@ -161,7 +161,12 @@ python3 tools/trace_deletions.py <关键词> --full
 
 ```bash
 node --check index.js client.js
+node tests/run-all.mjs        # 一键跑全部 8 个测试（等价于 npm test / pnpm test）
+```
 
+想单独跑某一个：
+
+```bash
 node tests/01-tombstone-shape.mjs      # 墓碑形状是否符合 DSH 的全部约束
 node tests/02-tool-params.mjs          # 工具参数解析
 node tests/03-tool-execute.mjs         # 工具执行路径（含防死锁）
@@ -169,8 +174,11 @@ node tests/04-http-entry.mjs           # 界面按钮走的 HTTP 入口
 node tests/05-real-log-regression.mjs  # 真实日志回归（无日志时自动跳过）
 node tests/06-client-load.mjs          # 客户端 bundle 加载
 node tests/07-truncate-span.mjs        # 截断的区间计算
-node tests/08-tombstone-text.mjs       # 墓碑文案的轮数统计
+node tests/08-tombstone-text.mjs       # 墓碑文案（单轮 / 截断 / 跳号）
 ```
+
+> ⚠️ **跑测试一律看退出码，别只看屏幕上的 ✅**：任何一行输出出现 ❌，进程都会以非零码退出；
+> 出现 `⏭ 跳过` 时还会额外提示「这部分没有被验证——别当成通过」。
 
 ## 致谢
 

@@ -10,24 +10,46 @@
  *     import './_guard.mjs';
  *
  * 之后任何一行输出里出现 ❌，进程就会以非零码退出。
- * 反过来，如果某个测试里的 ❌ 是**预期结果**（比如故意触发一个错误），
- * 就把它换成别的标记（例如 `↯`），别让守卫误判。
+ *
+ * 三条边界（都实测过）：
+ *   - 测试自己调 `process.exit(0)` 也拦得住（退出码仍会变成 1）✅
+ *   - `console.error` 也一并盯着（2026-10-04 发现只劫持 log 会漏掉走 stderr 的 ❌）✅
+ *   - 出现 `⏭ 跳过` 时**不判失败，但会明确提示"这部分没被验证"**——
+ *     跳过不等于通过，别让屏幕上的 ✅ 骗人。
+ *
+ * 反过来：如果某个测试里的 ❌ 是**预期结果**（比如故意触发一个错误），
+ * 就把它换成别的标记，别让守卫误判。
  */
 let failed = 0;
-const original = console.log.bind(console);
+let skipped = 0;
 
-console.log = (...args) => {
-	const line = args.map((value) => String(value)).join(" ");
+const originalLog = console.log.bind(console);
+const originalError = console.error.bind(console);
+
+function scan(line) {
 	if (line.includes("❌")) failed += 1;
+	if (line.includes("⏭")) skipped += 1;
+}
+
+const tap = (original) => (...args) => {
+	scan(args.map((value) => String(value)).join(" "));
 	original(...args);
 };
 
+console.log = tap(originalLog);
+console.error = tap(originalError);
+
 process.on("exit", (code) => {
 	if (failed > 0) {
-		original(`\n❌ 本次运行出现 ${failed} 处失败标记 → 退出码置为 1`);
+		originalLog(`\n❌ 本次运行出现 ${failed} 处失败标记 → 退出码置为 1`);
 		process.exitCode = 1;
 		return;
 	}
 	// 测试自己已经把退出码设成非零时不再多嘴。
-	if (code === 0) original("\n✅ 无失败标记");
+	if (code !== 0) return;
+	if (skipped > 0) {
+		originalLog(`\n⚠️ 没有失败标记，但有 ${skipped} 处「跳过」——这部分**没有被验证**，别当成通过。`);
+		return;
+	}
+	originalLog("\n✅ 无失败标记，也没有跳过");
 });

@@ -29,6 +29,9 @@
     "./client": "./client.js",
     "./package.json": "./package.json"
   },
+  "scripts": {
+    "test": "node tests/run-all.mjs"
+  },
   "files": [
     "index.js",
     "client.js",
