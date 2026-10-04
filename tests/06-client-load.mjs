@@ -1,3 +1,4 @@
+import './_guard.mjs';   // 让打印 ❌ 真的等于测试失败（见该文件头说明）
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

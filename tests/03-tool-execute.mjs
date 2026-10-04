@@ -1,3 +1,4 @@
+import './_guard.mjs';   // 让打印 ❌ 真的等于测试失败（见该文件头说明）
 import { makeToolDefinition } from '../index.js';
 
 function buildSession() {

@@ -63,7 +63,7 @@ dsh plugin --profile <你的配置档名> add dsh-turn-eraser
 
 删除后：
 
-- **模型**：从下一轮起再也看不到已删除的内容，只能看到 `[已删除 x 轮]`
+- **模型**：从下一轮起再也看不到已删除的内容，只会看到一个占位符，例如 `[已删除第 20~22 轮]`
 - **界面**：那一轮整体隐藏（含思考过程、工具调用的折叠块）
 - **磁盘上的日志**：**原文完整保留**
 
@@ -75,13 +75,17 @@ DSH 的会话日志是"只追加"的，历史无法就地改写。所以本插�
 
 原始事件仍然躺在日志里，只是**不再进入模型可见的 surface**。
 
+> **墓碑里写什么是有讲究的**：写的是**轮次号**（如 `[已删除第 20~22 轮]`），不是内容摘要。
+> 因为模型只需要知道**洞在哪**，不需要知道**洞里是什么**——而被删的**主题**本身，
+> 可能正是你想让它消失的东西。
+
 一条墓碑长这样：
 
 ```json
 {
   "type": "user/message",
   "data": {
-    "content": [{ "type": "text", "text": "[已删除 3 轮]" }],
+    "content": [{ "type": "text", "text": "[已删除第 20~22 轮]" }],
     "source": {
       "producer": "session-tools",
       "action": "delete",
@@ -149,6 +153,7 @@ python3 tools/trace_deletions.py <关键词> --full
 4. **引用了一个官方组件库**（`@deepseek-ai/dsh-client-ui-primitives`）。官方文档并不推荐插件引用它。代码里做了**自绘兜底**：拿不到这个库时按钮依然可用，只是外观退化。
 5. **"删除整个会话"尚未实现，目前也没有实现这个功能的计划**。
 6. **不做物理擦除**。本插件不会去重写会话日志文件——那是高风险操作（日志有连续编号，重排出错会导致整个会话打不开）。
+7. **删除只作用于当前会话**。已经在运行的子 Agent 持有自己的上下文快照，**看不到你之后的删除操作**。所以主会话里删掉的内容，正在跑的子代理**可能仍然记得**——没人会告诉它"这段已经被删了"。多 Agent 场景下请留意这一点。
 
 ## 开发与测试
 
@@ -195,8 +200,10 @@ text can always be read back with `tools/trace_deletions.py`.
 - ✅ Delete from this turn onward
 - ✅ Every turn has a delete entry point (official `conversation.chat.turnTail` slot)
 - ✅ Shows the turn number at each turn's footer (「第 N 轮」), so you and the AI can name the same turn
+- 🔎 The placeholder carries **turn numbers** (e.g. `[已删除第 20~22 轮]`), not a summary — the model learns *where* the gap is, never *what* was in it
 - ✅ Traceable by design — deleted content is hidden, not erased
 - ❌ No "undo"; to recover content, read it back from the log
 - ❌ Not tamper-proof (the log is plaintext)
+- ⚠️ Deletion applies to the **current session only**: a sub-agent that is already running keeps its own context snapshot and may still "remember" deleted content
 
 Licensed under MIT. Built by **Nagiko0739** in collaboration with an AI assistant.

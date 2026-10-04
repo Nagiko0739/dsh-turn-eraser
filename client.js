@@ -303,7 +303,7 @@ window.__ModuleLoader__.load({
 			marginLeft: "auto",
 			fontSize: 11,
 			lineHeight: "16px",
-			// 凪指定的固定色号（不跟主题变量走，免得换主题时深浅不一）。
+			// 固定色号（不跟主题变量走，免得换主题时深浅不一）。
 			color: "#81858d",
 			fontVariantNumeric: "tabular-nums",
 			userSelect: "none",
@@ -623,7 +623,7 @@ window.__ModuleLoader__.load({
 
 			// 「第 N 轮」不在这里单独注册——它由 TurnToolsAction（①）顺带渲染。
 			// 理由：插槽项在轮尾容器（纵向 flex）里各占一行，单独注册就必然多出
-			// 一行高度；而凪不想要那个高度，要和垃圾桶共用同一行。
+			// 一行高度；而它只需要和垃圾桶共用同一行。
 		}
 
 		return { inject, apply };

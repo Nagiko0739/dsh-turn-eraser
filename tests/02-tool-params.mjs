@@ -1,3 +1,4 @@
+import './_guard.mjs';   // 让打印 ❌ 真的等于测试失败（见该文件头说明）
 import {
   makeToolDefinition, planTurnDeletion, completedTurns, firstSurfaceSeqOfTurn, TOOL_NAME,
 } from '../index.js';
@@ -27,18 +28,28 @@ const { session } = buildSession();
 console.log('已完成轮次 =', JSON.stringify(completedTurns(session)), ' 期望 [10,11,12]');
 console.log('第11轮起点 seq =', firstSurfaceSeqOfTurn(session, 11));
 console.log();
-console.log('=== 四种说法的解析 ===');
+console.log('=== 六种说法的解析 ===');
+// 每项 = [说明, 参数, 是否预期抛错, 期望返回值]
+// ⚠️ 2026-10-04：省略 from 并**不是**错误——`planTurnDeletion` 把它当作 "latest"
+//    （默认删最新一轮）。原来的测试想当然地以为该报错，是测试错了，不是代码错了。
 const cases = [
-  ['删掉第 11 轮', { from: 11 }],
-  ['删掉最新一轮', { from: 'latest' }],
-  ['删掉第 11~12 轮', { from: 11, to: 12 }],
-  ['删掉第 11 轮之后的对话', { from: 11, to: 'end' }],
-  ['删掉不存在的第 99 轮', { from: 99 }],
-  ['什么都不给', {}],
+  ['删掉第 11 轮', { from: 11 }, false, [11]],
+  ['删掉最新一轮', { from: 'latest' }, false, [12]],
+  ['删掉第 11~12 轮', { from: 11, to: 12 }, false, [11, 12]],
+  ['删掉第 11 轮之后的对话', { from: 11, to: 'end' }, false, [11, 12]],
+  ['删掉不存在的第 99 轮', { from: 99 }, true, null],
+  ['什么都不给（默认 = 最新一轮）', {}, false, [12]],
 ];
-for (const [label, args] of cases) {
-  try { console.log(`  ${label.padEnd(22)} → ${JSON.stringify(planTurnDeletion(session, args))}`); }
-  catch (e) { console.log(`  ${label.padEnd(22)} → ❌ ${e.code}: ${e.message}`); }
+for (const [label, args, expectThrow, expectTurns] of cases) {
+  try {
+    const value = planTurnDeletion(session, args);
+    const mismatched = Array.isArray(expectTurns) && JSON.stringify(value) !== JSON.stringify(expectTurns);
+    const mark = expectThrow === true || mismatched ? '❌ 不符合预期' : '✅';
+    console.log(`  ${label.padEnd(24)} → ${JSON.stringify(value)} ${mark}${mismatched ? `（期望 ${JSON.stringify(expectTurns)}）` : ''}`);
+  } catch (e) {
+    const mark = expectThrow === true ? '✅ 如预期抛错' : '❌ 意外抛错';
+    console.log(`  ${label.padEnd(24)} → ${e.code}: ${e.message}  ${mark}`);
+  }
 }
 
 console.log();

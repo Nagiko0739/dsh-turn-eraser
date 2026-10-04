@@ -36,12 +36,26 @@ const PLUGIN_ID = "session-tools";
  *  服务商之后才炸——参考实现就踩过，我们直接照抄它的教训。 */
 const PLACEHOLDER_TEXT = "[已删除]";
 /**
- * 带规模的占位文本（2026-10-01 新增）。
- * 模型看不到事件 seq、也看不到 token 数，但能数出"轮"，所以"删了几轮"是它
- * 唯一能理解的规模单位——目的是让模型知道洞有多大，而不只是"这里有个洞"。
- * **不要带主题**：主题本身可能正是要删的内容。
+ * 墓碑上的占位文本：告诉模型「**哪几轮**被删了」。
+ *
+ * 2026-10-01 起先是「删了几轮」（只给规模）；2026-10-04 细化为**轮次号区间**——
+ * 因为对模型真正有用的是**位置**（洞在哪），而不是**内容**（洞里是什么）：
+ *   - 位置信息零成本：轮次号本来就在事件里，每轮多背十来个字符；
+ *   - 摘要不行：被删的**主题**本身，可能正是用户想让它消失的东西。
+ * 连号用区间（truncate 的常见形态）；万一出现跳号（中间另有空洞）就如实列举，
+ * 绝不把没删的轮次圈进区间——模型要靠这个判断洞的位置，给它错的比不给更糟。
+ *
+ * @param {Iterable<number>} turnList 被遮蔽内容涉及的轮次号
  */
-const placeholderText = (turns) => (turns > 0 ? `[已删除 ${turns} 轮]` : PLACEHOLDER_TEXT);
+const placeholderText = (turnList) => {
+	const list = [...turnList].filter(Number.isSafeInteger).sort((left, right) => left - right);
+	if (list.length === 0) return PLACEHOLDER_TEXT;
+	const first = list[0];
+	const last = list[list.length - 1];
+	if (first === last) return `[已删除第 ${first} 轮]`;
+	if (last - first + 1 === list.length || list.length > 5) return `[已删除第 ${first}~${last} 轮]`;
+	return `[已删除第 ${list.join("、")} 轮]`;
+};
 /** 墓碑的 model 标记：界面靠它识别"这条记录代表一次删除"。 */
 const TOMBSTONE_MODEL = "tombstone";
 /** 允许的操作。 */
@@ -353,7 +367,7 @@ function applyAction(session, request) {
 	const tombstoneTurn = Number.isSafeInteger(turn) ? turn : 0;
 	const previewSource = event.type === "assistant/message" ? event.data?.message?.content : event.data?.content;
 	const tombstone = session.append("user/message", createUserMessage({
-		content: [{ type: "text", text: placeholderText(spanTurns.size) }],
+		content: [{ type: "text", text: placeholderText(spanTurns) }],
 		source: {
 			kind: "user",
 			producer: PLUGIN_ID,

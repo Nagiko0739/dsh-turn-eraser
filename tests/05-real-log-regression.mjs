@@ -10,6 +10,7 @@
  * 为什么做成"可选"：别人 clone 下来时本机未必有 DSH 会话日志，
  * 不应该因此让测试挂掉。
  */
+import './_guard.mjs';   // 让打印 ❌ 真的等于测试失败（见该文件头说明）
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
